@@ -1,0 +1,2304 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tokyo Trip OS</title>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #f6f4ef;
+      --panel: #ffffff;
+      --panel-soft: #fbfaf7;
+      --text: #1e2522;
+      --muted: #67716b;
+      --line: #ddd8cd;
+      --green: #226b54;
+      --green-soft: #e4f0eb;
+      --blue: #2d5f88;
+      --blue-soft: #e5edf4;
+      --amber: #8a5f13;
+      --amber-soft: #f3ead7;
+      --red: #9a3f35;
+      --red-soft: #f4e4e1;
+      --shadow: 0 18px 45px rgba(44, 39, 31, 0.08);
+      --radius: 8px;
+      font-family: Inter, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      letter-spacing: 0;
+    }
+
+    button, summary { font: inherit; }
+
+    .app {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 24px 18px;
+      border-right: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(16px);
+    }
+
+    .brand {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 8px 24px;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: var(--radius);
+      color: #fff;
+      background: var(--green);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.15;
+    }
+
+    .brand p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .nav {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .nav a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 40px;
+      padding: 9px 10px;
+      border-radius: var(--radius);
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .nav a:hover, .nav a:focus-visible {
+      background: var(--panel);
+      color: var(--text);
+      outline: 2px solid transparent;
+    }
+
+    .nav a.active {
+      background: var(--green-soft);
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .sidebar-note {
+      position: absolute;
+      right: 18px;
+      bottom: 24px;
+      left: 18px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel-soft);
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .main {
+      padding: 28px;
+      max-width: 1240px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+
+    .title-block h2 {
+      margin: 0;
+      font-size: clamp(26px, 4vw, 42px);
+      line-height: 1;
+    }
+
+    .title-block p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border: 1px solid #d8c99f;
+      border-radius: 999px;
+      background: var(--amber-soft);
+      color: var(--amber);
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .stats {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      margin-bottom: 18px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .stat {
+      padding: 16px;
+      min-height: 104px;
+    }
+
+    .stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .stat small {
+      display: block;
+      color: var(--muted);
+      margin-top: 8px;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .quick {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin: 18px 0 32px;
+    }
+
+    .quick-card {
+      display: flex;
+      gap: 12px;
+      min-height: 116px;
+      padding: 16px;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 160ms ease, border-color 160ms ease;
+    }
+
+    .quick-card:hover, .quick-card:focus-visible {
+      transform: translateY(-2px);
+      border-color: #aeb8b1;
+      outline: none;
+    }
+
+    .icon-box {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border-radius: var(--radius);
+      background: var(--green-soft);
+      color: var(--green);
+    }
+
+    .quick-card h3, .section h3, .budget-card h4, .rule-card h4 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .quick-card p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    section {
+      margin: 34px 0;
+      scroll-margin-top: 24px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-end;
+      margin-bottom: 14px;
+    }
+
+    .section-head h3 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .section-head p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .section-tag {
+      padding: 6px 9px;
+      border-radius: 999px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .route-shell {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) 360px;
+      gap: 16px;
+      padding: 16px;
+    }
+
+    .route-map {
+      position: relative;
+      min-height: 430px;
+      overflow: hidden;
+      border: 1px solid #eee9de;
+      border-radius: var(--radius);
+      background:
+        linear-gradient(135deg, rgba(226, 236, 231, 0.72), rgba(251, 250, 247, 0.9)),
+        radial-gradient(circle at 18% 76%, rgba(45, 95, 136, 0.16), transparent 30%),
+        radial-gradient(circle at 78% 64%, rgba(34, 107, 84, 0.14), transparent 28%);
+    }
+
+    .map-grid {
+      position: absolute;
+      inset: 0;
+      opacity: 0.38;
+      background-image:
+        linear-gradient(to right, rgba(103, 113, 107, 0.16) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(103, 113, 107, 0.16) 1px, transparent 1px);
+      background-size: 44px 44px;
+    }
+
+    .route-line {
+      position: absolute;
+      height: 3px;
+      transform-origin: left center;
+      border-radius: 999px;
+      background: var(--green);
+      box-shadow: 0 0 0 4px rgba(34, 107, 84, 0.1);
+    }
+
+    .line-osaka {
+      left: 13%;
+      top: 68%;
+      width: 115px;
+      transform: rotate(-18deg);
+    }
+
+    .line-kyoto {
+      left: 20%;
+      top: 58%;
+      width: 120px;
+      transform: rotate(-32deg);
+    }
+
+    .line-nightbus {
+      left: 31%;
+      top: 47%;
+      width: 300px;
+      transform: rotate(-6deg);
+      background: var(--blue);
+      box-shadow: 0 0 0 4px rgba(45, 95, 136, 0.1);
+    }
+
+    .line-tokyo-west {
+      left: 66%;
+      top: 41%;
+      width: 95px;
+      transform: rotate(12deg);
+    }
+
+    .line-kamakura {
+      left: 66%;
+      top: 52%;
+      width: 125px;
+      transform: rotate(48deg);
+      background: var(--blue);
+      box-shadow: 0 0 0 4px rgba(45, 95, 136, 0.1);
+    }
+
+    .line-disney {
+      left: 75%;
+      top: 50%;
+      width: 75px;
+      transform: rotate(30deg);
+      background: var(--amber);
+      box-shadow: 0 0 0 4px rgba(138, 95, 19, 0.1);
+    }
+
+    .line-narita {
+      left: 79%;
+      top: 42%;
+      width: 105px;
+      transform: rotate(-38deg);
+      background: var(--red);
+      box-shadow: 0 0 0 4px rgba(154, 63, 53, 0.1);
+    }
+
+    .pin {
+      position: absolute;
+      left: var(--x);
+      top: var(--y);
+      width: 150px;
+      min-height: 78px;
+      padding: 10px 10px 10px 44px;
+      transform: translate(-22px, -22px);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 14px 30px rgba(44, 39, 31, 0.1);
+    }
+
+    .pin span {
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      width: 26px;
+      height: 26px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: var(--green);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .pin strong {
+      display: block;
+      font-size: 13px;
+      line-height: 1.25;
+    }
+
+    .pin small {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    .pin-city span { background: var(--green); }
+    .pin-sea span { background: var(--blue); }
+    .pin-bay span { background: var(--amber); }
+    .pin-air span { background: var(--red); }
+    .pin-kansai span { background: var(--blue); }
+    .pin-kyoto span { background: var(--amber); }
+
+    .route-panel {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .route-summary {
+      padding: 14px;
+      border: 1px solid #eee9de;
+      border-radius: var(--radius);
+      background: var(--panel-soft);
+    }
+
+    .route-summary h4 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+
+    .route-summary p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .route-steps {
+      display: grid;
+      gap: 8px;
+    }
+
+    .route-steps a {
+      display: grid;
+      grid-template-columns: 34px 1fr 18px;
+      gap: 10px;
+      align-items: center;
+      min-height: 48px;
+      padding: 10px;
+      border: 1px solid #eee9de;
+      border-radius: var(--radius);
+      background: var(--panel);
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .route-steps a:hover, .route-steps a:focus-visible {
+      border-color: #aeb8b1;
+      outline: none;
+    }
+
+    .route-steps b {
+      color: var(--green);
+      font-size: 12px;
+    }
+
+    .route-steps span {
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .route-steps i {
+      color: var(--muted);
+    }
+
+    .daily-route-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .daily-route-card {
+      display: grid;
+      grid-template-columns: 68px 1fr auto;
+      gap: 12px;
+      align-items: start;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+    }
+
+    .daily-route-card b {
+      color: var(--green);
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    .daily-route-card strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+      line-height: 1.25;
+    }
+
+    .daily-route-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .daily-route-card a {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border: 1px solid #eee9de;
+      border-radius: var(--radius);
+      color: var(--green);
+      background: var(--panel-soft);
+    }
+
+    .daily-route-card a:hover, .daily-route-card a:focus-visible {
+      border-color: #aeb8b1;
+      outline: none;
+    }
+
+    .ledger-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .ledger-card {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+    }
+
+    .ledger-card h4 {
+      margin: 0 0 10px;
+      font-size: 15px;
+    }
+
+    .ledger-lines {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .ledger-lines li {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: baseline;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #eee9de;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .ledger-lines li:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .ledger-lines strong {
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 800;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .ledger-total {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: var(--radius);
+      background: var(--green-soft);
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .day-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .legacy-itinerary {
+      display: none;
+    }
+
+    details.day {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      overflow: hidden;
+    }
+
+    details.day[open] {
+      box-shadow: var(--shadow);
+    }
+
+    .day summary {
+      display: grid;
+      grid-template-columns: 108px 1fr auto;
+      gap: 14px;
+      align-items: center;
+      padding: 15px 16px;
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .day summary::-webkit-details-marker { display: none; }
+
+    .day-kicker {
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .day-title strong {
+      display: block;
+      font-size: 16px;
+    }
+
+    .day-title span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .chevron {
+      transition: transform 160ms ease;
+      color: var(--muted);
+    }
+
+    details[open] .chevron { transform: rotate(180deg); }
+
+    .day-body {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 14px;
+      padding: 0 16px 16px;
+      border-top: 1px solid var(--line);
+    }
+
+    .timeline {
+      padding-top: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .time-row {
+      display: grid;
+      grid-template-columns: 66px 1fr;
+      gap: 12px;
+      padding: 11px 0;
+      border-bottom: 1px solid #eee9de;
+    }
+
+    .time-row:last-child { border-bottom: 0; }
+
+    .time-row b {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .time-row p {
+      margin: 0;
+      line-height: 1.55;
+      font-size: 14px;
+    }
+
+    .day-side {
+      padding-top: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .mini-card {
+      padding: 12px;
+      border-radius: var(--radius);
+      background: var(--panel-soft);
+      border: 1px solid #eee9de;
+    }
+
+    .mini-card h4 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 8px;
+      font-size: 13px;
+    }
+
+    .mini-card p, .mini-card li {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .mini-card p { margin: 0; }
+    .mini-card ul { margin: 0; padding-left: 18px; }
+
+    .budget-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .triage-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-bottom: 14px;
+    }
+
+    .triage-card {
+      padding: 16px;
+    }
+
+    .triage-card h4 {
+      margin: 0 0 12px;
+      font-size: 16px;
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .tag-list li {
+      padding: 6px 8px;
+      border: 1px solid #eee9de;
+      border-radius: 999px;
+      background: var(--panel-soft);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.2;
+    }
+
+    .optimized-days {
+      display: grid;
+      gap: 10px;
+    }
+
+    .optimized-day {
+      display: grid;
+      grid-template-columns: 92px 1fr 220px;
+      gap: 14px;
+      align-items: start;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+    }
+
+    .optimized-day b {
+      color: var(--green);
+      font-size: 12px;
+    }
+
+    .optimized-day strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 15px;
+    }
+
+    .optimized-day p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .optimized-day em {
+      display: block;
+      color: var(--amber);
+      font-style: normal;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .budget-card {
+      padding: 16px;
+      min-height: 166px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .budget-card .amount {
+      margin: 15px 0 8px;
+      font-size: 22px;
+      line-height: 1.15;
+      font-weight: 800;
+    }
+
+    .budget-card .amount small {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 5px;
+      font-weight: 500;
+    }
+
+    .risk {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .risk.low { background: var(--green-soft); color: var(--green); }
+    .risk.mid { background: var(--amber-soft); color: var(--amber); }
+    .risk.high { background: var(--red-soft); color: var(--red); }
+
+    .two-col {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .panel {
+      padding: 18px;
+    }
+
+    .panel h4 {
+      margin: 0 0 12px;
+      font-size: 16px;
+    }
+
+    .cost-breakdown {
+      margin-top: 14px;
+    }
+
+    .cost-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .cost-grid div {
+      min-height: 82px;
+      padding: 12px;
+      border: 1px solid #eee9de;
+      border-radius: var(--radius);
+      background: var(--panel-soft);
+    }
+
+    .cost-grid b {
+      display: block;
+      font-size: 13px;
+      line-height: 1.3;
+    }
+
+    .cost-grid span {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .cost-note {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .list li {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .list i {
+      width: 18px;
+      height: 18px;
+      color: var(--green);
+      flex: 0 0 auto;
+      margin-top: 1px;
+    }
+
+    .rule-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .rule-card {
+      padding: 16px;
+    }
+
+    .rule-card h4 {
+      margin-bottom: 12px;
+    }
+
+    .footer {
+      margin: 38px 0 10px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+      background: var(--panel-soft);
+    }
+
+    @media (max-width: 980px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar {
+        position: static;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .sidebar-note { position: static; margin-top: 16px; }
+      .nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .stats, .quick, .budget-grid, .triage-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .day-body, .two-col, .rule-grid, .route-shell { grid-template-columns: 1fr; }
+      .route-map { min-height: 390px; }
+      .cost-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .optimized-day { grid-template-columns: 86px 1fr; }
+      .optimized-day em { grid-column: 2; }
+      .daily-route-grid { grid-template-columns: 1fr; }
+      .ledger-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 620px) {
+      .main { padding: 18px 14px; }
+      .topbar { display: grid; }
+      .stats, .quick, .budget-grid, .triage-grid, .nav { grid-template-columns: 1fr; }
+      .day summary { grid-template-columns: 1fr auto; }
+      .day-kicker { grid-column: 1 / -1; }
+      .time-row { grid-template-columns: 1fr; gap: 5px; }
+      .section-head { align-items: flex-start; flex-direction: column; }
+      .route-shell { padding: 12px; }
+      .route-map { min-height: 1030px; }
+      .route-line { display: none; }
+      .pin {
+        left: 14px !important;
+        top: auto !important;
+        width: calc(100% - 28px);
+        transform: none;
+      }
+      .pin-d1 { top: 24px !important; }
+      .pin-d2 { top: 112px !important; }
+      .pin-d3 { top: 200px !important; }
+      .pin-d4 { top: 288px !important; }
+      .pin-d5 { top: 376px !important; }
+      .pin-d6 { top: 464px !important; }
+      .pin-d7 { top: 552px !important; }
+      .pin-d8 { top: 640px !important; }
+      .pin-d9 { top: 728px !important; }
+      .pin-d10 { top: 816px !important; }
+      .pin-d11 { top: 904px !important; }
+      .cost-grid { grid-template-columns: 1fr; }
+      .optimized-day { grid-template-columns: 1fr; }
+      .optimized-day em { grid-column: auto; }
+      .daily-route-card { grid-template-columns: 1fr auto; }
+      .daily-route-card b { grid-column: 1 / -1; }
+      .ledger-lines li { grid-template-columns: 1fr; }
+      .ledger-lines strong { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="Trip OS navigation">
+      <div class="brand">
+        <div class="brand-mark"><i data-lucide="map"></i></div>
+        <div>
+          <h1>Tokyo Trip OS</h1>
+          <p>双人旅行控制台</p>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a class="active" href="#dashboard"><i data-lucide="layout-dashboard"></i>Dashboard</a>
+        <a href="#map-route"><i data-lucide="map-pinned"></i>Map Route</a>
+        <a href="#optimized"><i data-lucide="list-checks"></i>Optimized</a>
+        <a href="#itinerary"><i data-lucide="calendar-days"></i>Itinerary</a>
+        <a href="#cost-ledger"><i data-lucide="receipt-text"></i>Cost Ledger</a>
+        <a href="#budget"><i data-lucide="wallet"></i>Budget</a>
+        <a href="#stay"><i data-lucide="train-front"></i>Stay & Move</a>
+        <a href="#rules"><i data-lucide="sliders-horizontal"></i>Rules</a>
+        <a href="#backup"><i data-lucide="cloud-rain"></i>Backup</a>
+      </nav>
+
+      <div class="sidebar-note">
+        执行原则：年轻人体力版，多跑地点；吃饭便利店保底，休息用车站/咖啡店短暂停靠。
+      </div>
+    </aside>
+
+    <main class="main">
+      <section id="dashboard">
+        <div class="topbar">
+          <div class="title-block">
+            <h2>旅行仪表盘</h2>
+            <p>2026/8/13 - 2026/8/19 · 东京 / 镰仓 / 迪士尼 · 2人</p>
+          </div>
+          <div class="status-pill"><i data-lucide="activity"></i>规划中 · 紧张但可控</div>
+        </div>
+
+        <div class="grid stats">
+          <article class="card stat">
+            <span>旅行状态</span>
+            <strong>规划中</strong>
+            <small>机票已定，住宿和票券待确认</small>
+          </article>
+          <article class="card stat">
+            <span>日期</span>
+            <strong>8/13 - 8/19</strong>
+            <small>孙正田 8/18 晚离开，傅宏宇 8/19 早离开</small>
+          </article>
+          <article class="card stat">
+            <span>人数</span>
+            <strong>2 人</strong>
+            <small>现场分工：路线 / 预算</small>
+          </article>
+          <article class="card stat">
+            <span>总预算</span>
+            <strong>约 10000 RMB</strong>
+            <small>双人吃住行玩预算；机票和购物另算</small>
+          </article>
+          <article class="card stat">
+            <span>当前状态</span>
+            <strong>紧张可控</strong>
+            <small>保留迪士尼，观景台/购物另算</small>
+          </article>
+        </div>
+
+        <div class="grid quick" aria-label="Quick entry modules">
+          <a class="card quick-card" href="#itinerary">
+            <div class="icon-box"><i data-lucide="calendar-days"></i></div>
+            <div>
+              <h3>行程 Itinerary</h3>
+              <p>每天一张折叠卡，照着主线走，累了切换备选。</p>
+            </div>
+          </a>
+          <a class="card quick-card" href="#budget">
+            <div class="icon-box"><i data-lucide="wallet"></i></div>
+            <div>
+              <h3>预算 Budget</h3>
+              <p>只看关键成本和风险，不在路上反复算账。</p>
+            </div>
+          </a>
+          <a class="card quick-card" href="#stay">
+            <div class="icon-box"><i data-lucide="train-front"></i></div>
+            <div>
+              <h3>住宿 & 交通</h3>
+              <p>住浅草/上野/藏前，市内用地铁和 JR。</p>
+            </div>
+          </a>
+          <a class="card quick-card" href="#rules">
+            <div class="icon-box"><i data-lucide="sliders-horizontal"></i></div>
+            <div>
+              <h3>规则系统</h3>
+              <p>吃饭、改行程、花钱、争议都有固定规则。</p>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <section id="map-route">
+        <div class="section-head">
+          <div>
+            <h3>Map Route</h3>
+            <p>把关西进、京都、夜巴东移、东京、镰仓、迪士尼、成田返程全部标在同一张地理相对路线图上。</p>
+          </div>
+          <span class="section-tag">Base · Tokyo East</span>
+        </div>
+
+        <div class="route-shell card">
+          <div class="route-map" aria-label="Tokyo trip route map">
+            <div class="map-grid"></div>
+            <div class="route-line line-osaka"></div>
+            <div class="route-line line-kyoto"></div>
+            <div class="route-line line-nightbus"></div>
+            <div class="route-line line-tokyo-west"></div>
+            <div class="route-line line-kamakura"></div>
+            <div class="route-line line-disney"></div>
+            <div class="route-line line-narita"></div>
+
+            <div class="pin pin-kansai pin-d1" style="--x: 10%; --y: 70%;">
+              <span>1</span>
+              <strong>D1 KIX → 大阪</strong>
+              <small>梅田 / 露天 / 心斋桥</small>
+            </div>
+            <div class="pin pin-kansai pin-d2" style="--x: 20%; --y: 62%;">
+              <span>2</span>
+              <strong>D2 大阪核心</strong>
+              <small>难波八坂 / 大阪城</small>
+            </div>
+            <div class="pin pin-kyoto pin-d3" style="--x: 29%; --y: 45%;">
+              <span>3</span>
+              <strong>D3 京都东山</strong>
+              <small>三十三间堂 / 清水寺</small>
+            </div>
+            <div class="pin pin-kyoto pin-d4" style="--x: 32%; --y: 33%;">
+              <span>4</span>
+              <strong>D4 京都北线</strong>
+              <small>伏见稻荷 / 叡山 / 夜巴</small>
+            </div>
+            <div class="pin pin-home pin-d5" style="--x: 68%; --y: 42%;">
+              <span>5</span>
+              <strong>D5 东京东侧</strong>
+              <small>上野 / 秋叶原 / 神田</small>
+            </div>
+            <div class="pin pin-home pin-d6" style="--x: 76%; --y: 36%;">
+              <span>6</span>
+              <strong>D6 浅草线</strong>
+              <small>浅草 / 隅田川 / 东京塔</small>
+            </div>
+            <div class="pin pin-city pin-d7" style="--x: 64%; --y: 56%;">
+              <span>7</span>
+              <strong>D7 西东京</strong>
+              <small>池袋 / 明治 / 原宿 / 涩谷</small>
+            </div>
+            <div class="pin pin-sea pin-d8" style="--x: 67%; --y: 79%;">
+              <span>8</span>
+              <strong>D8 镰仓江之岛</strong>
+              <small>长谷寺 / 大佛 / 江之岛</small>
+            </div>
+            <div class="pin pin-bay pin-d9" style="--x: 83%; --y: 62%;">
+              <span>9</span>
+              <strong>D9 Disney</strong>
+              <small>舞滨整天</small>
+            </div>
+            <div class="pin pin-air pin-d10" style="--x: 89%; --y: 24%;">
+              <span>10</span>
+              <strong>D10 成田方向</strong>
+              <small>补货 / 孙正田返程</small>
+            </div>
+            <div class="pin pin-air pin-d11" style="--x: 91%; --y: 13%;">
+              <span>11</span>
+              <strong>D11 NRT T1</strong>
+              <small>傅宏宇返程</small>
+            </div>
+          </div>
+
+          <div class="route-panel">
+            <div class="route-summary">
+              <h4>全程动线</h4>
+              <p>地理相对示意：KIX 在大阪西南，京都在大阪东北；夜巴东移到东京；镰仓在东京西南，舞滨在东京东南，成田在东京东北。</p>
+            </div>
+
+            <div class="route-steps">
+              <a href="https://www.google.com/maps/search/?api=1&query=Ueno%20Asakusa%20Tokyo" target="_blank" rel="noreferrer">
+                <b>01</b><span>上野 / 浅草 / 秋叶原</span><i data-lucide="external-link"></i>
+              </a>
+              <a href="https://www.google.com/maps/search/?api=1&query=Meiji%20Jingu%20Harajuku%20Shibuya" target="_blank" rel="noreferrer">
+                <b>02</b><span>明治神宫 / 原宿 / 涩谷</span><i data-lucide="external-link"></i>
+              </a>
+              <a href="https://www.google.com/maps/search/?api=1&query=Ikebukuro%20Shinjuku%20Tokyo%20Metropolitan%20Government%20Building" target="_blank" rel="noreferrer">
+                <b>03</b><span>池袋 / 新宿 / 东京都厅</span><i data-lucide="external-link"></i>
+              </a>
+              <a href="https://www.google.com/maps/search/?api=1&query=Kamakura%20Enoshima" target="_blank" rel="noreferrer">
+                <b>04</b><span>镰仓 / 江之岛一日往返</span><i data-lucide="external-link"></i>
+              </a>
+              <a href="https://www.google.com/maps/search/?api=1&query=Tokyo%20DisneySea%20Maihama" target="_blank" rel="noreferrer">
+                <b>05</b><span>舞滨 Disney / DisneySea</span><i data-lucide="external-link"></i>
+              </a>
+              <a href="https://www.google.com/maps/search/?api=1&query=Narita%20Airport%20Terminal%201%20Terminal%202" target="_blank" rel="noreferrer">
+                <b>06</b><span>成田机场 NRT T1 / T2</span><i data-lucide="external-link"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="daily-route-grid" aria-label="Daily detailed routes">
+          <article class="daily-route-card">
+            <b>Day 1<br>8/9</b>
+            <div>
+              <strong>大阪抵达线</strong>
+              <p>KIX → 住宿放行李 → 梅田蓝天大厦外观/可选上楼 → 露天神社 → 心斋桥/道顿堀。</p>
+            </div>
+            <a href="https://www.google.com/maps/search/?api=1&query=Kansai%20Airport%20Umeda%20Sky%20Building%20Ohatsu%20Tenjin%20Shinsaibashi" target="_blank" rel="noreferrer" aria-label="Open Day 1 route"><i data-lucide="external-link"></i></a>
+          </article>
+
+          <article class="daily-route-card">
+            <b>Day 2<br>8/10</b>
+            <div>
+              <strong>大阪核心线</strong>
+              <p>难波八坂神社 → 大阪城公园/外观 → 日本桥/黑门市场 → 新世界/通天阁外观 → 心斋桥。</p>
+            </div>
+            <a href="https://www.google.com/maps/search/?api=1&query=Namba%20Yasaka%20Shrine%20Osaka%20Castle%20Kuromon%20Market%20Shinsekai%20Osaka" target="_blank" rel="noreferrer" aria-label="Open Day 2 route"><i data-lucide="external-link"></i></a>
+          </article>
+
+          <article class="daily-route-card">
+            <b>Day 3<br>8/11</b>
+            <div>
+              <strong>京都东山线</strong>
+              <p>大阪 → 京都 → 三十三间堂可选 → 清水寺 → 二年坂三年坂 → 八坂神社 → 祇园/鸭川。</p>
+            </div>
+            <a href="https://www.google.com/maps/search/?api=1&query=Sanjusangendo%20Kiyomizu-dera%20Ninenzaka%20Yasaka%20Shrine%20Gion%20Kyoto" target="_blank" rel="noreferrer" aria-label="Open Day 3 route"><i data-lucide="external-link"></i></a>
+          </article>
+
+          <article class="daily-route-card">
+            <b>Day 4<br>8/12</b>
+            <div>
+              <strong>伏见稻荷 + 叡山短体验</strong>
+              <p>伏见稻荷 → 出町柳 → 河合神社/下鸭神社 → 叡山电车短乘 → 京都站/夜巴点。</p>
+            </div>
+            <a href="https://www.google.com/maps/search/?api=1&query=Fushimi%20Inari%20Taisha%20Demachiyanagi%20Shimogamo%20Shrine%20Kawai%20Shrine%20Eizan%20Railway" target="_blank" rel="noreferrer" aria-label="Open Day 4 route"><i data-lucide="external-link"></i></a>
+          </article>
+
+          <article class="daily-route-card">
+            <b>Day 5<br>8/13</b>
+            <div>
+              <strong>东京低强度进入</strong>
+              <p>夜巴到东京 → 上野 → 阿美横丁 → 秋叶原 → 神田神社 → 住宿休息。</p>
+            </div>
+            <a href="https://www.google.com/maps/search/?api=1&query=Ueno%20Ameyoko%20Akihabara%20Kanda%20Myojin%20Tokyo" target="_blank" rel="noreferrer" aria-label="Open Day 5 route"><i data-lucide="external-link"></i></a>
+          </article>
+
+          <article class="daily-route-card">
+            <b>Day 6<br>8/14</b>
+            <div>
+              <strong>浅草 + 东京铁塔外观</strong>
+              <p>浅草寺 → 浅草文化观光中心 → 隅田川 → 休息 → 东京铁塔外观拍照。</p>
+            </div>
+            <a href="https://www.google.com/maps/search/?api=1&query=Sensoji%20Asakusa%20Culture%20Tourist%20Information%20Center%20Sumida%20River%20Tokyo%20Tower" target="_blank" rel="noreferrer" aria-label="Open Day 6 route"><i data-lucide="external-link"></i></a>
+          </article>
+
+          <article class="daily-route-card">
+            <b>Day 7<br>8/15</b>
+            <div>
+              <strong>池袋 + 原宿涩谷线</strong>
+              <p>池袋 → 明治神宫 → 原宿 → 涩谷；涩谷 Sky 预算外可选，隅田川活动体力够再加。</p>
+            </div>
+            <a href="https://www.google.com/maps/search/?api=1&query=Ikebukuro%20Meiji%20Jingu%20Harajuku%20Shibuya%20Sky" target="_blank" rel="noreferrer" aria-label="Open Day 7 route"><i data-lucide="external-link"></i></a>
+          </article>
+
+          <article class="daily-route-card">
+            <b>Day 8<br>8/16</b>
+            <div>
+              <strong>镰仓 / 江之岛线</strong>
+              <p>东京 → 长谷寺 → 御灵神社 → 镰仓大佛 → 江之岛夕阳 → 东京。</p>
+            </div>
+            <a href="https://www.google.com/maps/search/?api=1&query=Hasedera%20Kamakura%20Goryo%20Shrine%20Kotoku-in%20Enoshima" target="_blank" rel="noreferrer" aria-label="Open Day 8 route"><i data-lucide="external-link"></i></a>
+          </article>
+
+          <article class="daily-route-card">
+            <b>Day 9<br>8/17</b>
+            <div>
+              <strong>东京迪士尼整天</strong>
+              <p>住宿地 → 舞滨 → 东京迪士尼/DisneySea → 住宿地。不安排其他景点。</p>
+            </div>
+            <a href="https://www.google.com/maps/search/?api=1&query=Tokyo%20Disneyland%20Tokyo%20DisneySea%20Maihama" target="_blank" rel="noreferrer" aria-label="Open Day 9 route"><i data-lucide="external-link"></i></a>
+          </article>
+
+          <article class="daily-route-card">
+            <b>Day 10<br>8/18</b>
+            <div>
+              <strong>补货 + 成田</strong>
+              <p>上野/秋叶原/银座三选一 → 住宿取行李 → 孙正田去 NRT T2，傅宏宇住成田附近住宿或应急过夜点。</p>
+            </div>
+            <a href="https://www.google.com/maps/search/?api=1&query=Ueno%20Akihabara%20Ginza%20Narita%20Airport%20Terminal%202" target="_blank" rel="noreferrer" aria-label="Open Day 10 route"><i data-lucide="external-link"></i></a>
+          </article>
+
+          <article class="daily-route-card">
+            <b>Day 11<br>8/19</b>
+            <div>
+              <strong>傅宏宇返程</strong>
+              <p>成田/京成成田住宿或应急过夜点 → NRT T1 → 值机/托运/安检。</p>
+            </div>
+            <a href="https://www.google.com/maps/search/?api=1&query=Keisei%20Narita%20Narita%20Airport%20Terminal%201" target="_blank" rel="noreferrer" aria-label="Open Day 11 route"><i data-lucide="external-link"></i></a>
+          </article>
+        </div>
+      </section>
+
+      <section id="optimized">
+        <div class="section-head">
+          <div>
+            <h3>Optimized Plan</h3>
+            <p>基于你们列出的全部地点做取舍：多玩地方，但不把每天排到崩。</p>
+          </div>
+          <span class="section-tag">Main execution plan</span>
+        </div>
+
+        <div class="grid triage-grid">
+          <article class="card triage-card">
+            <h4>必须保留</h4>
+            <ul class="tag-list">
+              <li>梅田蓝天大厦</li>
+              <li>露天神社</li>
+              <li>心斋桥</li>
+              <li>难波八坂</li>
+              <li>大阪城</li>
+              <li>清水寺</li>
+              <li>八坂神社</li>
+              <li>伏见稻荷</li>
+              <li>上野</li>
+              <li>秋叶原</li>
+              <li>神田神社</li>
+              <li>浅草寺</li>
+              <li>东京铁塔外观</li>
+              <li>池袋</li>
+              <li>明治神宫</li>
+              <li>原宿</li>
+              <li>涩谷</li>
+              <li>镰仓</li>
+              <li>长谷寺</li>
+              <li>御灵神社</li>
+              <li>镰仓大佛</li>
+              <li>江之岛</li>
+              <li>东京迪士尼</li>
+            </ul>
+          </article>
+
+          <article class="card triage-card">
+            <h4>顺路可加</h4>
+            <ul class="tag-list">
+              <li>浅草文化观光中心</li>
+              <li>隅田川</li>
+              <li>三十三间堂</li>
+              <li>河合神社</li>
+              <li>下鸭神社</li>
+              <li>叡山电车短体验</li>
+              <li>涩谷 Sky</li>
+              <li>鸭川/祇园夜散步</li>
+              <li>阿美横丁</li>
+              <li>东京站/银座补货</li>
+            </ul>
+          </article>
+
+          <article class="card triage-card">
+            <h4>建议取舍</h4>
+            <ul class="tag-list">
+              <li>东京铁塔不上塔</li>
+              <li>大阪城不进天守阁</li>
+              <li>下鸭+河合只二选一或放弃</li>
+              <li>三十三间堂只在京都体力够时进</li>
+              <li>隅田川放到浅草日晚上</li>
+              <li>迪士尼不买快速票</li>
+              <li>白须神社不进主线</li>
+              <li>富士山/河口湖不进主线</li>
+              <li>涩谷 Sky 只在预算够时买</li>
+              <li>梅田蓝天大厦优先外观/低价替代</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="optimized-days">
+          <div class="optimized-day">
+            <b>新增取舍</b>
+            <div>
+              <strong>低预算多地点版：多看免费点，少买高价票</strong>
+              <p>叡山电车可以和出町柳、下鸭神社、河合神社放在同半天；白须神社在琵琶湖西岸，公共交通衔接弱；富士山/河口湖从东京往返约一整天，会挤掉镰仓、迪士尼或东京购物。</p>
+            </div>
+            <em>最合理取舍：京都保留叡山短体验；东京保留迪士尼，涩谷 Sky/梅田上楼变成预算够才买。</em>
+          </div>
+
+          <div class="optimized-day">
+            <b>8/9 Day 1</b>
+            <div>
+              <strong>大阪抵达：梅田 + 心斋桥</strong>
+              <p>KIX 会合 → 酒店放行李 → 梅田蓝天大厦 → 露天神社 → 心斋桥 / 道顿堀。第一天不排太满，重点适应和夜景。</p>
+            </div>
+            <em>取舍：梅田蓝天大厦建议看外观或上庭园二选一；太累就删上楼。</em>
+          </div>
+
+          <div class="optimized-day">
+            <b>8/10 Day 2</b>
+            <div>
+              <strong>大阪核心：难波八坂 + 大阪城</strong>
+              <p>难波八坂 → 大阪城外观/公园 → 日本桥或黑门市场 → 新世界/通天阁外观 → 晚上可继续心斋桥。</p>
+            </div>
+            <em>取舍：大阪城建议不进天守阁，把时间留给京都和东京。</em>
+          </div>
+
+          <div class="optimized-day">
+            <b>8/11 Day 3</b>
+            <div>
+              <strong>京都东山：清水寺 + 八坂神社</strong>
+              <p>大阪 → 京都 → 三十三间堂 → 清水寺 → 二年坂三年坂 → 八坂神社 → 祇园 / 鸭川。</p>
+            </div>
+            <em>取舍：三十三间堂保留为可选；如果到京都晚，直接清水寺线。</em>
+          </div>
+
+          <div class="optimized-day">
+            <b>8/12 Day 4</b>
+            <div>
+              <strong>伏见稻荷 + 下鸭/河合 + 叡山电车短体验</strong>
+              <p>早上伏见稻荷 → 出町柳 → 河合神社/下鸭神社 → 叡山电车短乘到八濑比叡山口或一站体验 → 京都站/夜巴点休息 → 晚上夜巴去东京。</p>
+            </div>
+            <em>取舍：不去贵船/鞍马深处，不去白须神社；只保留叡山电车体验和下鸭/河合。</em>
+          </div>
+
+          <div class="optimized-day">
+            <b>8/13 Day 5</b>
+            <div>
+              <strong>东京初到：上野 + 秋叶原 + 神田神社</strong>
+              <p>夜巴到东京 → 上野 → 阿美横丁 → 秋叶原 → 神田神社 → 住宿休息。</p>
+            </div>
+            <em>取舍：夜巴后不要再加浅草，避免第一天东京就透支。</em>
+          </div>
+
+          <div class="optimized-day">
+            <b>8/14 Day 6</b>
+            <div>
+              <strong>浅草 + 隅田川 + 东京铁塔</strong>
+              <p>浅草寺 → 浅草文化观光中心 → 隅田川 → 下午休息 → 傍晚东京铁塔外观拍照。</p>
+            </div>
+            <em>取舍：东京铁塔不上塔；隅田川如果想看 8/15 活动，可挪到 Day 7 晚上。</em>
+          </div>
+
+          <div class="optimized-day">
+            <b>8/15 Day 7</b>
+            <div>
+              <strong>池袋 + 明治神宫 + 原宿 + 涩谷</strong>
+              <p>池袋买谷子 → 明治神宫 → 原宿 → 涩谷。预算够且天气好，再加涩谷 Sky。</p>
+            </div>
+            <em>取舍：涩谷 Sky 是可选项，不作为必买门票；池袋购物设时间上限。</em>
+          </div>
+
+          <div class="optimized-day">
+            <b>8/16 Day 8</b>
+            <div>
+              <strong>镰仓 / 江之岛一日</strong>
+              <p>东京 → 镰仓 → 长谷寺 → 御灵神社 → 镰仓大佛 → 江之岛夕阳 → 东京。</p>
+            </div>
+            <em>取舍：不加北镰仓，保证长谷寺、御灵神社、大佛、江之岛体验完整。</em>
+          </div>
+
+          <div class="optimized-day">
+            <b>8/17 Day 9</b>
+            <div>
+              <strong>东京迪士尼整天</strong>
+              <p>早到入园 → 热门项目 → 午后长休息 → 夜间表演 → 回东京住宿。</p>
+            </div>
+            <em>取舍：不买快速票；不再安排任何东京市区景点。</em>
+          </div>
+
+          <div class="optimized-day">
+            <b>8/18 Day 10</b>
+            <div>
+              <strong>东京补货 + 成田</strong>
+              <p>上野 / 秋叶原 / 银座三选一补货 → 回住宿拿行李 → 孙正田去 NRT T2，傅宏宇住成田附近住宿或应急过夜点。</p>
+            </div>
+            <em>取舍：不要跨多个商圈补货，选一个主战场。</em>
+          </div>
+
+          <div class="optimized-day">
+            <b>8/19 Day 11</b>
+            <div>
+              <strong>傅宏宇返程</strong>
+              <p>成田住宿或应急过夜点 → NRT T1 → 值机 / 托运 / 安检。</p>
+            </div>
+            <em>取舍：前一晚住成田，降低早班机风险。</em>
+          </div>
+        </div>
+      </section>
+
+      <section id="itinerary">
+        <div class="section-head">
+          <div>
+            <h3>Itinerary</h3>
+            <p>同区域优先，每天保留缓冲时间。</p>
+          </div>
+          <span class="section-tag">7 days · Tokyo core</span>
+        </div>
+
+        <div class="day-list">
+          <details class="day" open>
+            <summary>
+              <span class="day-kicker">Day 1 · 8/9</span>
+              <span class="day-title"><strong>大阪抵达：梅田・露天神社・心斋桥</strong><span>KIX 会合后低强度进城</span></span>
+              <i class="chevron" data-lucide="chevron-down"></i>
+            </summary>
+            <div class="day-body">
+              <div class="timeline">
+                <div class="time-row"><b>上午</b><p>KIX 会合，买交通卡/取现金/买 SIM，南海电车到难波或新今宫，住宿寄存行李。</p></div>
+                <div class="time-row"><b>下午</b><p>梅田蓝天大厦外观或可选上楼，露天神社，梅田周边休息。</p></div>
+                <div class="time-row"><b>晚上</b><p>心斋桥、道顿堀散步，便利店或平价连锁解决晚餐。</p></div>
+              </div>
+              <div class="day-side">
+                <div class="mini-card"><h4><i data-lucide="utensils"></i>餐饮</h4><p>机场/便利店早餐，晚餐用牛丼、拉面或便利店控制预算。</p></div>
+                <div class="mini-card"><h4><i data-lucide="train"></i>交通</h4><p>KIX → 难波优先南海空港急行；市内地铁少量移动。</p></div>
+                <div class="mini-card"><h4><i data-lucide="sparkles"></i>亮点</h4><p>梅田夜景氛围、露天神社、心斋桥道顿堀。</p></div>
+                <div class="mini-card"><h4><i data-lucide="rotate-ccw"></i>备选</h4><p>太累就删梅田上楼，只看外观和心斋桥。</p></div>
+              </div>
+            </div>
+          </details>
+
+          <details class="day">
+            <summary>
+              <span class="day-kicker">Day 2 · 8/10</span>
+              <span class="day-title"><strong>大阪核心：难波八坂・大阪城・新世界</strong><span>多地点低门票打卡</span></span>
+              <i class="chevron" data-lucide="chevron-down"></i>
+            </summary>
+            <div class="day-body">
+              <div class="timeline">
+                <div class="time-row"><b>上午</b><p>难波八坂神社，大阪城公园和天守阁外观。</p></div>
+                <div class="time-row"><b>下午</b><p>黑门市场或日本桥，新世界，通天阁外观。</p></div>
+                <div class="time-row"><b>晚上</b><p>回难波/心斋桥补逛，早点回去整理第二天去京都的行李。</p></div>
+              </div>
+              <div class="day-side">
+                <div class="mini-card"><h4><i data-lucide="utensils"></i>餐饮</h4><p>黑门市场只少量尝鲜，正餐用便利店/连锁。</p></div>
+                <div class="mini-card"><h4><i data-lucide="train"></i>交通</h4><p>地铁+步行；不默认买大阪周游卡。</p></div>
+                <div class="mini-card"><h4><i data-lucide="sparkles"></i>亮点</h4><p>大阪城、难波八坂、新世界都保留，但少买门票。</p></div>
+                <div class="mini-card"><h4><i data-lucide="rotate-ccw"></i>备选</h4><p>下雨就删新世界，把日本桥/商场作为室内替代。</p></div>
+              </div>
+            </div>
+          </details>
+
+          <details class="day">
+            <summary>
+              <span class="day-kicker">Day 3 · 8/11</span>
+              <span class="day-title"><strong>京都东山：三十三间堂・清水寺・八坂神社</strong><span>京都最核心的一天</span></span>
+              <i class="chevron" data-lucide="chevron-down"></i>
+            </summary>
+            <div class="day-body">
+              <div class="timeline">
+                <div class="time-row"><b>上午</b><p>大阪到京都，住宿寄存行李；三十三间堂可选。</p></div>
+                <div class="time-row"><b>下午</b><p>清水寺，二年坂三年坂，八坂神社。</p></div>
+                <div class="time-row"><b>晚上</b><p>祇园、花见小路、鸭川散步，便利店或便宜定食收尾。</p></div>
+              </div>
+              <div class="day-side">
+                <div class="mini-card"><h4><i data-lucide="utensils"></i>餐饮</h4><p>清水寺周边少买小吃，正餐不要在景区核心硬吃。</p></div>
+                <div class="mini-card"><h4><i data-lucide="train"></i>交通</h4><p>大阪→京都后，京都市内以步行+少量公交为主。</p></div>
+                <div class="mini-card"><h4><i data-lucide="sparkles"></i>亮点</h4><p>清水寺、二三年坂、八坂神社、祇园夜散步。</p></div>
+                <div class="mini-card"><h4><i data-lucide="rotate-ccw"></i>备选</h4><p>如果到京都晚，删三十三间堂，直奔清水寺线。</p></div>
+              </div>
+            </div>
+          </details>
+
+          <details class="day">
+            <summary>
+              <span class="day-kicker">Day 4 · 8/12</span>
+              <span class="day-title"><strong>伏见稻荷・下鸭/河合・叡山电车・夜巴</strong><span>京都多点 + 省住宿</span></span>
+              <i class="chevron" data-lucide="chevron-down"></i>
+            </summary>
+            <div class="day-body">
+              <div class="timeline">
+                <div class="time-row"><b>上午</b><p>伏见稻荷，尽早去，爬到适合体力的位置就返回。</p></div>
+                <div class="time-row"><b>下午</b><p>出町柳，河合神社/下鸭神社，叡山电车短乘体验到八濑比叡山口或少量站点。</p></div>
+                <div class="time-row"><b>晚上</b><p>京都站或夜巴点休息、洗漱准备，夜巴去东京。</p></div>
+              </div>
+              <div class="day-side">
+                <div class="mini-card"><h4><i data-lucide="utensils"></i>餐饮</h4><p>夜巴前便利店买水、饭团、面包，避免半夜找吃的。</p></div>
+                <div class="mini-card"><h4><i data-lucide="train"></i>交通</h4><p>JR/京阪/叡山电车组合；不去贵船鞍马深处。</p></div>
+                <div class="mini-card"><h4><i data-lucide="sparkles"></i>亮点</h4><p>伏见稻荷、下鸭/河合、叡山电车一次覆盖。</p></div>
+                <div class="mini-card"><h4><i data-lucide="rotate-ccw"></i>备选</h4><p>太累就删叡山电车，只保留伏见稻荷+下鸭/河合。</p></div>
+              </div>
+            </div>
+          </details>
+
+          <details class="day">
+            <summary>
+              <span class="day-kicker">Day 5 · 8/13</span>
+              <span class="day-title"><strong>东京初到：上野・秋叶原・神田神社</strong><span>夜巴后不要爆走</span></span>
+              <i class="chevron" data-lucide="chevron-down"></i>
+            </summary>
+            <div class="day-body">
+              <div class="timeline">
+                <div class="time-row"><b>上午</b><p>夜巴到东京，寄存行李，上野公园，阿美横丁。</p></div>
+                <div class="time-row"><b>下午</b><p>秋叶原，神田神社，买谷/电器只看重点。</p></div>
+                <div class="time-row"><b>晚上</b><p>回住宿或安全睡眠点休息，恢复体力。</p></div>
+              </div>
+              <div class="day-side">
+                <div class="mini-card"><h4><i data-lucide="utensils"></i>餐饮</h4><p>便利店+牛丼/拉面，夜巴后不要为了找店浪费体力。</p></div>
+                <div class="mini-card"><h4><i data-lucide="train"></i>交通</h4><p>开始使用东京地铁券或 IC 卡。</p></div>
+                <div class="mini-card"><h4><i data-lucide="sparkles"></i>亮点</h4><p>上野、阿美横丁、秋叶原、神田神社。</p></div>
+                <div class="mini-card"><h4><i data-lucide="rotate-ccw"></i>备选</h4><p>如果夜巴睡得差，删阿美横丁或缩短秋叶原。</p></div>
+              </div>
+            </div>
+          </details>
+
+          <details class="day">
+            <summary>
+              <span class="day-kicker">Day 6 · 8/14</span>
+              <span class="day-title"><strong>浅草・隅田川・东京铁塔外观</strong><span>经典东京线</span></span>
+              <i class="chevron" data-lucide="chevron-down"></i>
+            </summary>
+            <div class="day-body">
+              <div class="timeline">
+                <div class="time-row"><b>上午</b><p>浅草寺，仲见世通，浅草文化观光中心。</p></div>
+                <div class="time-row"><b>下午</b><p>隅田川散步，回住宿/咖啡店短休。</p></div>
+                <div class="time-row"><b>晚上</b><p>东京铁塔外观拍照，不上塔；住宿附近吃便利店或平价餐。</p></div>
+              </div>
+              <div class="day-side">
+                <div class="mini-card"><h4><i data-lucide="utensils"></i>餐饮</h4><p>浅草小吃少量尝鲜，晚餐压预算。</p></div>
+                <div class="mini-card"><h4><i data-lucide="train"></i>交通</h4><p>浅草线/银座线/大江户线视住宿位置组合。</p></div>
+                <div class="mini-card"><h4><i data-lucide="sparkles"></i>亮点</h4><p>浅草寺、观光中心免费视角、隅田川、东京铁塔外观。</p></div>
+                <div class="mini-card"><h4><i data-lucide="rotate-ccw"></i>备选</h4><p>下雨就把隅田川缩短，转秋叶原/上野室内。</p></div>
+              </div>
+            </div>
+          </details>
+
+          <details class="day">
+            <summary>
+              <span class="day-kicker">Day 7 · 8/15</span>
+              <span class="day-title"><strong>池袋・明治神宫・原宿・涩谷</strong><span>年轻人体力满载日</span></span>
+              <i class="chevron" data-lucide="chevron-down"></i>
+            </summary>
+            <div class="day-body">
+              <div class="timeline">
+                <div class="time-row"><b>上午</b><p>池袋买谷子，设时间上限，不无限逛。</p></div>
+                <div class="time-row"><b>下午</b><p>明治神宫，原宿竹下通，表参道可快速路过。</p></div>
+                <div class="time-row"><b>晚上</b><p>涩谷，涩谷 Sky 预算外可选；体力够再去隅田川活动。</p></div>
+              </div>
+              <div class="day-side">
+                <div class="mini-card"><h4><i data-lucide="utensils"></i>餐饮</h4><p>池袋/涩谷便利店或连锁快餐，避免排网红店。</p></div>
+                <div class="mini-card"><h4><i data-lucide="train"></i>交通</h4><p>池袋→原宿/明治神宫→涩谷，同方向移动。</p></div>
+                <div class="mini-card"><h4><i data-lucide="sparkles"></i>亮点</h4><p>池袋购物、明治神宫、原宿、涩谷夜景。</p></div>
+                <div class="mini-card"><h4><i data-lucide="rotate-ccw"></i>备选</h4><p>预算紧删涩谷 Sky；太累删隅田川活动。</p></div>
+              </div>
+            </div>
+          </details>
+
+          <details class="day">
+            <summary>
+              <span class="day-kicker">Day 8 · 8/16</span>
+              <span class="day-title"><strong>镰仓・江之岛</strong><span>东京段最值得的一日往返</span></span>
+              <i class="chevron" data-lucide="chevron-down"></i>
+            </summary>
+            <div class="day-body">
+              <div class="timeline">
+                <div class="time-row"><b>上午</b><p>东京出发到镰仓/长谷，长谷寺。</p></div>
+                <div class="time-row"><b>下午</b><p>御灵神社，镰仓大佛，江之电沿线到江之岛。</p></div>
+                <div class="time-row"><b>晚上</b><p>江之岛看夕阳，回东京。</p></div>
+              </div>
+              <div class="day-side">
+                <div class="mini-card"><h4><i data-lucide="utensils"></i>餐饮</h4><p>小町通少量小吃；正餐便利店/简单定食。</p></div>
+                <div class="mini-card"><h4><i data-lucide="train"></i>交通</h4><p>买江之岛镰仓一日券或按住宿位置选 JR/小田急。</p></div>
+                <div class="mini-card"><h4><i data-lucide="sparkles"></i>亮点</h4><p>长谷寺、御灵神社、镰仓大佛、江之岛夕阳。</p></div>
+                <div class="mini-card"><h4><i data-lucide="rotate-ccw"></i>备选</h4><p>大雨就取消江之岛夕阳，早点回东京。</p></div>
+              </div>
+            </div>
+          </details>
+
+          <details class="day">
+            <summary>
+              <span class="day-kicker">Day 9 · 8/17</span>
+              <span class="day-title"><strong>东京迪士尼 / DisneySea</strong><span>整天单独排</span></span>
+              <i class="chevron" data-lucide="chevron-down"></i>
+            </summary>
+            <div class="day-body">
+              <div class="timeline">
+                <div class="time-row"><b>上午</b><p>开园前到，优先排热门项目。</p></div>
+                <div class="time-row"><b>下午</b><p>按 App 等待时间调整，找室内项目和休息点恢复体力。</p></div>
+                <div class="time-row"><b>晚上</b><p>夜间表演/烟花后回东京，不加其他景点。</p></div>
+              </div>
+              <div class="day-side">
+                <div class="mini-card"><h4><i data-lucide="utensils"></i>餐饮</h4><p>早餐便利店，园内只吃基础餐，不买高价零食。</p></div>
+                <div class="mini-card"><h4><i data-lucide="train"></i>交通</h4><p>JR 到舞滨；预留返程拥挤时间。</p></div>
+                <div class="mini-card"><h4><i data-lucide="sparkles"></i>亮点</h4><p>保留主体验，不买快速票。</p></div>
+                <div class="mini-card"><h4><i data-lucide="rotate-ccw"></i>备选</h4><p>暴雨/台风看官方运营，必要时改台场/丰洲。</p></div>
+              </div>
+            </div>
+          </details>
+
+          <details class="day">
+            <summary>
+              <span class="day-kicker">Day 10 · 8/18</span>
+              <span class="day-title"><strong>东京补货・成田</strong><span>孙正田返程，傅宏宇成田附近过夜</span></span>
+              <i class="chevron" data-lucide="chevron-down"></i>
+            </summary>
+            <div class="day-body">
+              <div class="timeline">
+                <div class="time-row"><b>上午</b><p>上野/秋叶原/银座三选一补货，不跨多个商圈。</p></div>
+                <div class="time-row"><b>下午</b><p>取行李，整理退税/证件，提前去成田方向。</p></div>
+                <div class="time-row"><b>晚上</b><p>孙正田去 NRT T2；傅宏宇在成田/京成成田附近住宿或应急过夜点。</p></div>
+              </div>
+              <div class="day-side">
+                <div class="mini-card"><h4><i data-lucide="utensils"></i>餐饮</h4><p>便利店或机场简单吃，避免赶路时找餐厅。</p></div>
+                <div class="mini-card"><h4><i data-lucide="train"></i>交通</h4><p>京成线/Access Express 去成田；别卡点。</p></div>
+                <div class="mini-card"><h4><i data-lucide="sparkles"></i>亮点</h4><p>补货收尾，返程风险降低。</p></div>
+                <div class="mini-card"><h4><i data-lucide="rotate-ccw"></i>备选</h4><p>行李多就直接去成田，不补货。</p></div>
+              </div>
+            </div>
+          </details>
+
+          <details class="day">
+            <summary>
+              <span class="day-kicker">Day 11 · 8/19</span>
+              <span class="day-title"><strong>傅宏宇返程</strong><span>NRT T1 早班机</span></span>
+              <i class="chevron" data-lucide="chevron-down"></i>
+            </summary>
+            <div class="day-body">
+              <div class="timeline">
+                <div class="time-row"><b>上午</b><p>成田住宿或应急过夜点 → NRT T1，值机，托运，安检。</p></div>
+                <div class="time-row"><b>下午</b><p>无。</p></div>
+                <div class="time-row"><b>晚上</b><p>无。</p></div>
+              </div>
+              <div class="day-side">
+                <div class="mini-card"><h4><i data-lucide="utensils"></i>餐饮</h4><p>机场便利店或早餐店。</p></div>
+                <div class="mini-card"><h4><i data-lucide="train"></i>交通</h4><p>酒店接驳/京成线/短程出租，按实际住宿点决定。</p></div>
+                <div class="mini-card"><h4><i data-lucide="sparkles"></i>亮点</h4><p>不赶路，低风险返程。</p></div>
+                <div class="mini-card"><h4><i data-lucide="rotate-ccw"></i>备选</h4><p>如果前一晚仍在东京市区，必须更早出发。</p></div>
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <div class="day-list legacy-itinerary">
+          <details class="day" open>
+            <summary>
+              <span class="day-kicker">Day 1 · 8/13</span>
+              <span class="day-title"><strong>上野・浅草・秋叶原</strong><span>夜巴后低强度进入东京</span></span>
+              <i class="chevron" data-lucide="chevron-down"></i>
+            </summary>
+            <div class="day-body">
+              <div class="timeline">
+                <div class="time-row"><b>上午</b><p>到东京，寄存行李，上野公园，阿美横丁。</p></div>
+                <div class="time-row"><b>下午</b><p>浅草寺，仲见世通，浅草文化观光中心，隅田川，晴空塔外观。</p></div>
+                <div class="time-row"><b>晚上</b><p>秋叶原，晚餐后回住宿。</p></div>
+              </div>
+              <div class="day-side">
+                <div class="mini-card"><h4><i data-lucide="utensils"></i>餐饮</h4><p>便利店早餐；上野/浅草定食；秋叶原拉面或牛丼。</p></div>
+                <div class="mini-card"><h4><i data-lucide="train"></i>交通</h4><p>启用 Tokyo Subway 72h Ticket，地铁 + 步行。</p></div>
+                <div class="mini-card"><h4><i data-lucide="sparkles"></i>亮点</h4><p>上野、浅草、秋叶原一条线完成东京初印象。</p></div>
+                <div class="mini-card"><h4><i data-lucide="rotate-ccw"></i>备选</h4><p>夜巴后太累：删晴空塔外观，只保留上野 + 浅草 + 秋叶原。</p></div>
+              </div>
+            </div>
+          </details>
+
+          <details class="day">
+            <summary>
+              <span class="day-kicker">Day 2 · 8/14</span>
+              <span class="day-title"><strong>明治神宫・原宿・表参道・涩谷</strong><span>年轻街区 + 购物 + 夜景</span></span>
+              <i class="chevron" data-lucide="chevron-down"></i>
+            </summary>
+            <div class="day-body">
+              <div class="timeline">
+                <div class="time-row"><b>上午</b><p>明治神宫，原宿竹下通。</p></div>
+                <div class="time-row"><b>下午</b><p>表参道，涩谷 Scramble Crossing，Parco / Loft / Animate。15:30-16:30 休息。</p></div>
+                <div class="time-row"><b>晚上</b><p>涩谷夜景，回住宿。</p></div>
+              </div>
+              <div class="day-side">
+                <div class="mini-card"><h4><i data-lucide="utensils"></i>餐饮</h4><p>原宿/表参道简餐；涩谷商场餐厅层。</p></div>
+                <div class="mini-card"><h4><i data-lucide="train"></i>交通</h4><p>地铁为主，同区域步行串联。</p></div>
+                <div class="mini-card"><h4><i data-lucide="sparkles"></i>亮点</h4><p>东京年轻街区和购物密度最高的一天。</p></div>
+                <div class="mini-card"><h4><i data-lucide="rotate-ccw"></i>备选</h4><p>原宿太挤：删竹下通，改代官山 / 中目黑。</p></div>
+              </div>
+            </div>
+          </details>
+
+          <details class="day">
+            <summary>
+              <span class="day-kicker">Day 3 · 8/15</span>
+              <span class="day-title"><strong>池袋・新宿・隅田川</strong><span>买谷子 + 免费夜景 + 夜间活动</span></span>
+              <i class="chevron" data-lucide="chevron-down"></i>
+            </summary>
+            <div class="day-body">
+              <div class="timeline">
+                <div class="time-row"><b>上午</b><p>池袋，Animate 池袋本店，Sunshine City 周边。</p></div>
+                <div class="time-row"><b>下午</b><p>新宿，歌舞伎町外观，商圈逛街，休息 1 小时。</p></div>
+                <div class="time-row"><b>晚上</b><p>东京都厅免费夜景，隅田川放水灯 / 浅草夜散步。</p></div>
+              </div>
+              <div class="day-side">
+                <div class="mini-card"><h4><i data-lucide="utensils"></i>餐饮</h4><p>池袋商场餐厅；新宿或浅草平价餐厅。</p></div>
+                <div class="mini-card"><h4><i data-lucide="train"></i>交通</h4><p>地铁 + JR，池袋 → 新宿 → 浅草方向。</p></div>
+                <div class="mini-card"><h4><i data-lucide="sparkles"></i>亮点</h4><p>池袋购物，新宿夜景，浅草夜间活动。</p></div>
+                <div class="mini-card"><h4><i data-lucide="rotate-ccw"></i>备选</h4><p>太累：取消隅田川，只保留池袋 + 新宿 + 东京都厅。</p></div>
+              </div>
+            </div>
+          </details>
+
+          <details class="day">
+            <summary>
+              <span class="day-kicker">Day 4 · 8/16</span>
+              <span class="day-title"><strong>镰仓・江之岛</strong><span>海边、电车、寺社、夕阳</span></span>
+              <i class="chevron" data-lucide="chevron-down"></i>
+            </summary>
+            <div class="day-body">
+              <div class="timeline">
+                <div class="time-row"><b>上午</b><p>东京 → 镰仓，小町通，鹤冈八幡宫。</p></div>
+                <div class="time-row"><b>下午</b><p>长谷寺，镰仓大佛，御灵神社，江之电沿线；咖啡店休息 45-60 分钟。</p></div>
+                <div class="time-row"><b>晚上</b><p>江之岛看夕阳，回东京。</p></div>
+              </div>
+              <div class="day-side">
+                <div class="mini-card"><h4><i data-lucide="utensils"></i>餐饮</h4><p>小町通小吃或镰仓定食；晚餐江之岛附近或回东京。</p></div>
+                <div class="mini-card"><h4><i data-lucide="train"></i>交通</h4><p>小田急江之岛镰仓一日券，从新宿出发。</p></div>
+                <div class="mini-card"><h4><i data-lucide="sparkles"></i>亮点</h4><p>东京段体验差异最大的一天。</p></div>
+                <div class="mini-card"><h4><i data-lucide="rotate-ccw"></i>备选</h4><p>下雨：取消江之岛夕阳，保留镰仓主街 + 长谷寺，早回东京。</p></div>
+              </div>
+            </div>
+          </details>
+
+          <details class="day">
+            <summary>
+              <span class="day-kicker">Day 5 · 8/17</span>
+              <span class="day-title"><strong>迪士尼 / DisneySea</strong><span>整趟最贵但体验最完整</span></span>
+              <i class="chevron" data-lucide="chevron-down"></i>
+            </summary>
+            <div class="day-body">
+              <div class="timeline">
+                <div class="time-row"><b>上午</b><p>开园前到达，优先排热门项目。</p></div>
+                <div class="time-row"><b>下午</b><p>按 App 等待时间调整，安排一次长休息。</p></div>
+                <div class="time-row"><b>晚上</b><p>夜间表演 / 烟花，回东京住宿。</p></div>
+              </div>
+              <div class="day-side">
+                <div class="mini-card"><h4><i data-lucide="utensils"></i>餐饮</h4><p>早餐出发前解决；午餐园内简餐；晚餐园内或舞滨周边。</p></div>
+                <div class="mini-card"><h4><i data-lucide="train"></i>交通</h4><p>东京市区 → 舞滨，JR + 步行。</p></div>
+                <div class="mini-card"><h4><i data-lucide="sparkles"></i>亮点</h4><p>保留主题乐园主体验，不买快速票控预算。</p></div>
+                <div class="mini-card"><h4><i data-lucide="rotate-ccw"></i>备选</h4><p>预算压力大：改台场 + 丰洲 + 东京湾夜景。</p></div>
+              </div>
+            </div>
+          </details>
+
+          <details class="day">
+            <summary>
+              <span class="day-kicker">Day 6 · 8/18</span>
+              <span class="day-title"><strong>筑地・银座・东京站・成田</strong><span>购物收尾 + 孙正田返程</span></span>
+              <i class="chevron" data-lucide="chevron-down"></i>
+            </summary>
+            <div class="day-body">
+              <div class="timeline">
+                <div class="time-row"><b>上午</b><p>筑地场外市场，银座。</p></div>
+                <div class="time-row"><b>下午</b><p>东京站，上野 / 秋叶原补货，回住宿取行李。</p></div>
+                <div class="time-row"><b>晚上</b><p>孙正田去成田 NRT T2；傅宏宇住成田 / 京成成田。</p></div>
+              </div>
+              <div class="day-side">
+                <div class="mini-card"><h4><i data-lucide="utensils"></i>餐饮</h4><p>筑地早午餐；晚餐机场或成田附近简单解决。</p></div>
+                <div class="mini-card"><h4><i data-lucide="train"></i>交通</h4><p>东京市内地铁；东京 → 成田用京成线 / Access Express。</p></div>
+                <div class="mini-card"><h4><i data-lucide="sparkles"></i>亮点</h4><p>用低风险方式收尾，不赶飞机。</p></div>
+                <div class="mini-card"><h4><i data-lucide="rotate-ccw"></i>备选</h4><p>行李太多：删筑地，直接上野 / 秋叶原补货后去成田。</p></div>
+              </div>
+            </div>
+          </details>
+
+          <details class="day">
+            <summary>
+              <span class="day-kicker">Day 7 · 8/19</span>
+              <span class="day-title"><strong>返程日</strong><span>傅宏宇从 NRT T1 早班机离开</span></span>
+              <i class="chevron" data-lucide="chevron-down"></i>
+            </summary>
+            <div class="day-body">
+              <div class="timeline">
+                <div class="time-row"><b>上午</b><p>成田住宿 → NRT T1，值机，托运，安检。</p></div>
+                <div class="time-row"><b>下午</b><p>无。</p></div>
+                <div class="time-row"><b>晚上</b><p>无。</p></div>
+              </div>
+              <div class="day-side">
+                <div class="mini-card"><h4><i data-lucide="utensils"></i>餐饮</h4><p>机场便利店或早餐店。</p></div>
+                <div class="mini-card"><h4><i data-lucide="train"></i>交通</h4><p>酒店接驳车 / 京成线 / 短程出租。</p></div>
+                <div class="mini-card"><h4><i data-lucide="sparkles"></i>亮点</h4><p>低风险返程。</p></div>
+                <div class="mini-card"><h4><i data-lucide="rotate-ccw"></i>备选</h4><p>如果前一晚没住成田，必须更早从东京市区出发。</p></div>
+              </div>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <section id="cost-ledger">
+        <div class="section-head">
+          <div>
+            <h3>Cost Ledger</h3>
+            <p>按 `1 RMB = 23.8 JPY` 换算。购物不计入主预算；住宿/应急过夜、吃饭、交通、门票都计入。</p>
+          </div>
+          <span class="section-tag">JPY / RMB</span>
+        </div>
+
+        <div class="grid triage-grid">
+          <article class="card triage-card">
+            <h4>按每日明细汇总</h4>
+            <ul class="tag-list">
+              <li>孙正田：86310-131360 JPY / 3626-5519 RMB</li>
+              <li>傅宏宇：90110-140160 JPY / 3786-5889 RMB</li>
+              <li>压到5000：住宿/餐饮/夜巴必须靠近低-中位</li>
+            </ul>
+          </article>
+          <article class="card triage-card">
+            <h4>固定票价</h4>
+            <ul class="tag-list">
+              <li>Tokyo Subway 72h：2000 JPY / 84 RMB</li>
+              <li>镰仓一日券：约1640 JPY / 69 RMB</li>
+              <li>迪士尼：7900-10900 JPY / 332-458 RMB</li>
+              <li>清水寺：约500 JPY / 21 RMB</li>
+              <li>长谷寺：400 JPY / 17 RMB</li>
+              <li>镰仓大佛：300 JPY / 13 RMB</li>
+            </ul>
+          </article>
+          <article class="card triage-card">
+            <h4>预算外可选</h4>
+            <ul class="tag-list">
+              <li>涩谷 Sky：约2500-3000+ JPY / 105-126+ RMB</li>
+              <li>梅田蓝天大厦上楼：约2000 JPY / 84 RMB</li>
+              <li>隅田川灯笼：1700-2000 JPY / 71-84 RMB</li>
+              <li>购物：另算</li>
+            </ul>
+          </article>
+          <article class="card triage-card">
+            <h4>省钱底线</h4>
+            <ul class="tag-list">
+              <li>不坐新干线</li>
+              <li>8/12 夜巴省住宿</li>
+              <li>观景台只选一个或全删</li>
+              <li>普通日便利店保底</li>
+              <li>不睡街边/公园/无人车站</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="ledger-grid">
+          <article class="ledger-card">
+            <h4>Day 1 · 8/9 大阪抵达</h4>
+            <ul class="ledger-lines">
+              <li><span>KIX → 大阪市区交通</span><strong>970-1560 JPY / 41-66 RMB</strong></li>
+              <li><span>大阪市内移动</span><strong>500-800 JPY / 21-34 RMB</strong></li>
+              <li><span>住宿/安全睡眠点</span><strong>4000-6500 JPY / 168-273 RMB</strong></li>
+              <li><span>餐饮，便利店+平价餐</span><strong>2200-3000 JPY / 92-126 RMB</strong></li>
+              <li><span>梅田蓝天大厦上楼，可选</span><strong>0 或 2000 JPY / 0 或 84 RMB</strong></li>
+            </ul>
+            <div class="ledger-total">主预算小计：7670-11860 JPY / 322-498 RMB</div>
+          </article>
+
+          <article class="ledger-card">
+            <h4>Day 2 · 8/10 大阪核心</h4>
+            <ul class="ledger-lines">
+              <li><span>大阪市内交通</span><strong>700-1100 JPY / 29-46 RMB</strong></li>
+              <li><span>住宿/安全睡眠点</span><strong>4000-6500 JPY / 168-273 RMB</strong></li>
+              <li><span>餐饮，便利店+连锁</span><strong>2200-3000 JPY / 92-126 RMB</strong></li>
+              <li><span>大阪城/通天阁/蓝天大厦上楼</span><strong>默认 0 JPY / 0 RMB</strong></li>
+            </ul>
+            <div class="ledger-total">主预算小计：6900-10600 JPY / 290-445 RMB</div>
+          </article>
+
+          <article class="ledger-card">
+            <h4>Day 3 · 8/11 京都东山</h4>
+            <ul class="ledger-lines">
+              <li><span>大阪 → 京都 + 京都市内</span><strong>1200-2000 JPY / 50-84 RMB</strong></li>
+              <li><span>清水寺</span><strong>约500 JPY / 21 RMB</strong></li>
+              <li><span>三十三间堂，可选</span><strong>0 或约600-700 JPY / 0 或25-29 RMB</strong></li>
+              <li><span>京都住宿/安全睡眠点</span><strong>4500-7000 JPY / 189-294 RMB</strong></li>
+              <li><span>餐饮</span><strong>2200-3000 JPY / 92-126 RMB</strong></li>
+            </ul>
+            <div class="ledger-total">主预算小计：8400-13200 JPY / 353-555 RMB</div>
+          </article>
+
+          <article class="ledger-card">
+            <h4>Day 4 · 8/12 伏见稻荷 + 叡山 + 夜巴</h4>
+            <ul class="ledger-lines">
+              <li><span>京都市内 + 出町柳/叡山短乘</span><strong>1800-3200 JPY / 76-134 RMB</strong></li>
+              <li><span>伏见稻荷/下鸭/河合</span><strong>0 JPY / 0 RMB</strong></li>
+              <li><span>京都/大阪 → 东京夜巴</span><strong>8000-12000 JPY / 336-504 RMB</strong></li>
+              <li><span>夜巴前餐饮/补给</span><strong>2200-3000 JPY / 92-126 RMB</strong></li>
+            </ul>
+            <div class="ledger-total">主预算小计：12000-18200 JPY / 504-765 RMB</div>
+          </article>
+
+          <article class="ledger-card">
+            <h4>Day 5 · 8/13 上野・秋叶原</h4>
+            <ul class="ledger-lines">
+              <li><span>东京地铁券折算/追加 IC</span><strong>700-1200 JPY / 29-50 RMB</strong></li>
+              <li><span>寄存行李，可选</span><strong>0-800 JPY / 0-34 RMB</strong></li>
+              <li><span>东京住宿/安全睡眠点</span><strong>4500-7000 JPY / 189-294 RMB</strong></li>
+              <li><span>餐饮</span><strong>2200-3000 JPY / 92-126 RMB</strong></li>
+              <li><span>上野/秋叶原/神田神社</span><strong>0 JPY / 0 RMB</strong></li>
+            </ul>
+            <div class="ledger-total">主预算小计：7400-12000 JPY / 311-504 RMB</div>
+          </article>
+
+          <article class="ledger-card">
+            <h4>Day 6 · 8/14 浅草・东京铁塔外观</h4>
+            <ul class="ledger-lines">
+              <li><span>东京地铁券折算/追加 IC</span><strong>700-1200 JPY / 29-50 RMB</strong></li>
+              <li><span>东京住宿/安全睡眠点</span><strong>4500-7000 JPY / 189-294 RMB</strong></li>
+              <li><span>餐饮</span><strong>2200-3000 JPY / 92-126 RMB</strong></li>
+              <li><span>浅草寺/观光中心/隅田川/东京铁塔外观</span><strong>0 JPY / 0 RMB</strong></li>
+            </ul>
+            <div class="ledger-total">主预算小计：7400-11200 JPY / 311-471 RMB</div>
+          </article>
+
+          <article class="ledger-card">
+            <h4>Day 7 · 8/15 池袋・原宿・涩谷</h4>
+            <ul class="ledger-lines">
+              <li><span>东京地铁券折算/追加 IC</span><strong>700-1500 JPY / 29-63 RMB</strong></li>
+              <li><span>东京住宿/安全睡眠点</span><strong>4500-7000 JPY / 189-294 RMB</strong></li>
+              <li><span>餐饮</span><strong>2200-3000 JPY / 92-126 RMB</strong></li>
+              <li><span>明治神宫/原宿/涩谷</span><strong>0 JPY / 0 RMB</strong></li>
+              <li><span>涩谷 Sky，可选预算外</span><strong>约2500-3000+ JPY / 105-126+ RMB</strong></li>
+            </ul>
+            <div class="ledger-total">主预算小计：7400-11500 JPY / 311-483 RMB</div>
+          </article>
+
+          <article class="ledger-card">
+            <h4>Day 8 · 8/16 镰仓・江之岛</h4>
+            <ul class="ledger-lines">
+              <li><span>江之岛镰仓一日券/往返交通</span><strong>1640-2300 JPY / 69-97 RMB</strong></li>
+              <li><span>长谷寺</span><strong>400 JPY / 17 RMB</strong></li>
+              <li><span>镰仓大佛</span><strong>300 JPY / 13 RMB</strong></li>
+              <li><span>东京住宿/安全睡眠点</span><strong>4500-7000 JPY / 189-294 RMB</strong></li>
+              <li><span>餐饮</span><strong>2500-3500 JPY / 105-147 RMB</strong></li>
+            </ul>
+            <div class="ledger-total">主预算小计：9340-13500 JPY / 392-567 RMB</div>
+          </article>
+
+          <article class="ledger-card">
+            <h4>Day 9 · 8/17 迪士尼</h4>
+            <ul class="ledger-lines">
+              <li><span>迪士尼 1 日票</span><strong>7900-10900 JPY / 332-458 RMB</strong></li>
+              <li><span>东京 ↔ 舞滨交通</span><strong>600-1200 JPY / 25-50 RMB</strong></li>
+              <li><span>东京住宿/安全睡眠点</span><strong>4500-7000 JPY / 189-294 RMB</strong></li>
+              <li><span>餐饮，园内控制版</span><strong>3000-4000 JPY / 126-168 RMB</strong></li>
+              <li><span>快速票/周边</span><strong>预算外，不计入</strong></li>
+            </ul>
+            <div class="ledger-total">主预算小计：16000-23100 JPY / 672-971 RMB</div>
+          </article>
+
+          <article class="ledger-card">
+            <h4>Day 10 · 8/18 补货 + 成田</h4>
+            <ul class="ledger-lines">
+              <li><span>东京市内 + 成田交通</span><strong>1600-3200 JPY / 67-134 RMB</strong></li>
+              <li><span>傅宏宇成田住宿/应急过夜点</span><strong>3000-6500 JPY / 126-273 RMB</strong></li>
+              <li><span>孙正田住宿</span><strong>0 JPY / 0 RMB</strong></li>
+              <li><span>餐饮</span><strong>2200-3000 JPY / 92-126 RMB</strong></li>
+            </ul>
+            <div class="ledger-total">孙正田：3800-6200 JPY / 160-261 RMB；傅宏宇：6800-12700 JPY / 286-534 RMB</div>
+          </article>
+
+          <article class="ledger-card">
+            <h4>Day 11 · 8/19 傅宏宇返程</h4>
+            <ul class="ledger-lines">
+              <li><span>成田住宿点 → NRT T1</span><strong>0-800 JPY / 0-34 RMB</strong></li>
+              <li><span>早餐</span><strong>800-1500 JPY / 34-63 RMB</strong></li>
+            </ul>
+            <div class="ledger-total">傅宏宇小计：800-2300 JPY / 34-97 RMB</div>
+          </article>
+        </div>
+      </section>
+
+      <section id="budget">
+        <div class="section-head">
+          <div>
+            <h3>Budget Dashboard</h3>
+            <p>汇率按 1 RMB = 23.8 JPY 估算。</p>
+          </div>
+          <span class="section-tag">Risk · High</span>
+        </div>
+
+        <div class="grid budget-grid">
+          <article class="card budget-card">
+            <div>
+              <h4>总预算</h4>
+              <div class="amount">目标 94000-119000 JPY<small>3950-5000 RMB / 人；每日都取高值会超到 5500-5900 RMB</small></div>
+            </div>
+            <span class="risk mid">中风险</span>
+          </article>
+          <article class="card budget-card">
+            <div>
+              <h4>住宿/应急过夜</h4>
+              <div class="amount">35000-50000 JPY<small>1471-2101 RMB / 人，青旅/胶囊+夜巴+1晚应急过夜策略</small></div>
+            </div>
+            <span class="risk mid">中风险</span>
+          </article>
+          <article class="card budget-card">
+            <div>
+              <h4>餐饮</h4>
+              <div class="amount">24000-33000 JPY<small>1008-1387 RMB / 人，便利店保底+少量平价正餐</small></div>
+            </div>
+            <span class="risk low">低风险</span>
+          </article>
+          <article class="card budget-card">
+            <div>
+              <h4>交通</h4>
+              <div class="amount">23000-29000 JPY<small>966-1218 RMB / 人，含关西、市区、叡山、夜巴、镰仓、成田</small></div>
+            </div>
+            <span class="risk mid">中风险</span>
+          </article>
+          <article class="card budget-card">
+            <div>
+              <h4>娱乐</h4>
+              <div class="amount">10000-14000 JPY<small>420-588 RMB / 人，迪士尼+基础寺社，观景台可选</small></div>
+            </div>
+            <span class="risk mid">中风险</span>
+          </article>
+          <article class="card budget-card">
+            <div>
+              <h4>购物</h4>
+              <div class="amount">另算<small>不计入 5000 RMB 主预算</small></div>
+            </div>
+            <span class="risk low">独立预算</span>
+          </article>
+        </div>
+
+        <article class="card panel cost-breakdown">
+          <h4>预算口径说明</h4>
+          <div class="cost-grid">
+            <div><b>5000 RMB 主预算</b><span>约 119000 JPY / 人，只包含吃住行玩，不含机票和购物。</span></div>
+            <div><b>执行目标</b><span>94000-119000 JPY / 人，靠低价床位、夜巴、应急过夜、便利店餐实现。</span></div>
+            <div><b>必须保留成本</b><span>迪士尼、夜巴、成田交通、基础睡眠点，按真实可买价算。</span></div>
+            <div><b>预算外可选</b><span>涩谷 Sky、梅田上楼、灯笼、大额购物、更多正餐。</span></div>
+          </div>
+        </article>
+      </section>
+
+      <section id="stay">
+        <div class="section-head">
+          <div>
+            <h3>Stay & Move</h3>
+            <p>用住宿位置减少每天的换乘成本。</p>
+          </div>
+          <span class="section-tag">浅草 / 上野 / 藏前</span>
+        </div>
+
+        <div class="grid two-col">
+          <article class="card panel">
+            <h4>住宿选择逻辑</h4>
+            <ul class="list">
+              <li><i data-lucide="check"></i><span>首选浅草、藏前、上野；预算更紧看南千住。</span></li>
+              <li><i data-lucide="check"></i><span>车站步行 10 分钟内，评分 8.0+，有门禁或明确入住方式。</span></li>
+              <li><i data-lucide="check"></i><span>优先找 4000-6500 JPY / 人 / 晚的青旅、胶囊、多人间。</span></li>
+              <li><i data-lucide="check"></i><span>傅宏宇 8/18 建议住成田或京成成田，降低早班机风险。</span></li>
+            </ul>
+          </article>
+          <article class="card panel">
+            <h4>交通规划</h4>
+            <ul class="list">
+              <li><i data-lucide="check"></i><span>8/13 启用 Tokyo Subway 72h Ticket，覆盖前三个东京市区日。</span></li>
+              <li><i data-lucide="check"></i><span>镰仓日用江之岛镰仓一日券，从新宿出发。</span></li>
+              <li><i data-lucide="check"></i><span>迪士尼日坐 JR 到舞滨，不安排其他景点。</span></li>
+              <li><i data-lucide="check"></i><span>东京到成田优先京成线 / Access Express，不赶时间不坐 Skyliner。</span></li>
+            </ul>
+          </article>
+        </div>
+
+        <article class="card panel cost-breakdown">
+          <h4>东京交通最合适套餐</h4>
+          <div class="cost-grid">
+            <div><b>推荐主票</b><span>Tokyo Subway 72-hour Ticket：2000 JPY / 84 RMB / 人。</span></div>
+            <div><b>使用时间</b><span>8/13 上午第一次进站启用，覆盖 8/13、8/14、8/15 三个东京市区高频移动日。</span></div>
+            <div><b>覆盖范围</b><span>东京 Metro + 都营地下铁；适合上野、浅草、秋叶原、池袋、新宿、原宿、涩谷、东京塔周边。</span></div>
+            <div><b>不覆盖</b><span>JR、迪士尼舞滨、镰仓/江之岛、成田机场交通、私铁和巴士。用 IC 卡/单买票补。</span></div>
+          </div>
+          <p class="cost-note">不要买 24h/48h：你们市区密集移动刚好是 3 天，72h 每天折算约 667 JPY / 28 RMB，比单次刷卡更稳。</p>
+        </article>
+
+        <article class="card panel cost-breakdown">
+          <h4>省住宿费策略</h4>
+          <div class="cost-grid">
+            <div><b>固定省钱项</b><span>8/12 京都/大阪 → 东京夜巴，省一晚住宿。</span></div>
+            <div><b>可用住宿</b><span>青旅床位、胶囊、女性/男性分区多人间、低价商务。</span></div>
+            <div><b>应急过夜点</b><span>不是露宿，是可付费/有人管理/有室内空间的过夜选择。</span></div>
+            <div><b>安全底线</b><span>不睡公园、街边、无人车站；行李和证件必须可锁或随身。</span></div>
+          </div>
+        </article>
+
+        <article class="card panel cost-breakdown">
+          <h4>交通钱拆账 / 人</h4>
+          <div class="cost-grid">
+            <div><b>KIX → 大阪</b><span>约 970-1560 JPY / 41-66 RMB</span></div>
+            <div><b>大阪市内</b><span>约 1500-2200 JPY / 63-92 RMB</span></div>
+            <div><b>大阪 → 京都 + 京都/叡山</b><span>约 2800-4300 JPY / 118-181 RMB</span></div>
+            <div><b>京都/大阪 → 东京夜巴</b><span>约 7000-12000 JPY / 294-504 RMB</span></div>
+            <div><b>东京 72h + 追加 IC</b><span>2000 + 1000-2500 JPY / 126-189 RMB</span></div>
+            <div><b>镰仓 / 江之岛</b><span>约 1640-2300 JPY / 69-97 RMB</span></div>
+            <div><b>迪士尼往返</b><span>约 600-1200 JPY / 25-50 RMB</span></div>
+            <div><b>东京 → 成田</b><span>约 1300-2700 JPY / 55-113 RMB</span></div>
+          </div>
+          <p class="cost-note">建议交通预算按 23000-29000 JPY / 人预留。低于 23000 JPY 会比较紧，主要风险是夜巴暑期涨价、叡山电车追加移动、临时坐特急。</p>
+        </article>
+      </section>
+
+      <section id="rules">
+        <div class="section-head">
+          <div>
+            <h3>Rules</h3>
+            <p>用规则代替现场反复讨论。</p>
+          </div>
+          <span class="section-tag">Low decision cost</span>
+        </div>
+
+        <div class="grid rule-grid">
+          <article class="card rule-card">
+            <h4>吃饭规则</h4>
+            <ul class="list">
+              <li><i data-lucide="timer"></i><span>不排队超过 15 分钟，排队时间优先让给景点。</span></li>
+              <li><i data-lucide="wallet"></i><span>普通日 2200-3000 JPY / 人；迪士尼和镰仓可到 3500 JPY。</span></li>
+              <li><i data-lucide="list-checks"></i><span>默认：便利店 → 牛丼/拉面/连锁定食 → 商场餐厅层。</span></li>
+            </ul>
+          </article>
+          <article class="card rule-card">
+            <h4>行程规则</h4>
+            <ul class="list">
+              <li><i data-lucide="coffee"></i><span>累了先休息 25 分钟，便利店/车站/咖啡店都可以。</span></li>
+              <li><i data-lucide="minus-circle"></i><span>时间不够删付费点，不删免费顺路点。</span></li>
+              <li><i data-lucide="clock-4"></i><span>夜巴/飞机当天，出发前 3 小时停止新增远距离点。</span></li>
+            </ul>
+          </article>
+          <article class="card rule-card">
+            <h4>金钱规则</h4>
+            <ul class="list">
+              <li><i data-lucide="receipt"></i><span>每天晚上只记交通、餐饮、门票三类；购物单独记。</span></li>
+              <li><i data-lucide="alert-triangle"></i><span>单笔超过 3000 JPY 提醒一次；超过 5000 JPY 必须确认。</span></li>
+              <li><i data-lucide="scissors"></i><span>主预算超支先删观景台、灯笼、上楼项目，不删迪士尼和镰仓。</span></li>
+            </ul>
+          </article>
+          <article class="card rule-card">
+            <h4>双人规则</h4>
+            <ul class="list">
+              <li><i data-lucide="users"></i><span>一人负责路线，一人负责预算。</span></li>
+              <li><i data-lucide="vote"></i><span>争议只允许 2 个选项，讨论最多 5 分钟。</span></li>
+              <li><i data-lucide="route"></i><span>仍不同意时选更省体力、更少换乘、更接近住宿地的方案。</span></li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section id="backup">
+        <div class="section-head">
+          <div>
+            <h3>Risk & Backup</h3>
+            <p>遇到变化时直接切换方案。</p>
+          </div>
+          <span class="section-tag">雨天 / 体力 / 预算</span>
+        </div>
+
+        <div class="grid two-col">
+          <article class="card panel">
+            <h4>雨天替代</h4>
+            <ul class="list">
+              <li><i data-lucide="cloud-rain"></i><span>浅草/上野日：上野博物馆、秋叶原、商场。</span></li>
+              <li><i data-lucide="cloud-rain"></i><span>原宿/涩谷日：Parco、Loft、地下街。</span></li>
+              <li><i data-lucide="cloud-rain"></i><span>镰仓大雨：取消江之岛，改东京室内购物。</span></li>
+              <li><i data-lucide="cloud-rain"></i><span>迪士尼暴雨：看官方运营，必要时改期或取消。</span></li>
+            </ul>
+          </article>
+          <article class="card panel">
+            <h4>体力和预算应对</h4>
+            <ul class="list">
+              <li><i data-lucide="battery-low"></i><span>轻度疲劳：咖啡店休息 45 分钟，删除一个外观点。</span></li>
+              <li><i data-lucide="bed"></i><span>中度疲劳：下午回住宿，晚上只在附近吃饭。</span></li>
+              <li><i data-lucide="wallet-cards"></i><span>轻微超支：次日餐饮压到便利店 + 简餐。</span></li>
+              <li><i data-lucide="ban"></i><span>严重超支：停止新增付费点，园内不买周边。</span></li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <div class="footer">
+        文件为静态 HTML，可直接打开使用。预算按固定汇率估算，住宿、机票、夜巴、迪士尼票价会随订购时间变化，最终以下单页面为准。
+      </div>
+    </main>
+  </div>
+
+  <script>
+    lucide.createIcons({ attrs: { "stroke-width": 1.8, width: 18, height: 18 } });
+
+    const links = Array.from(document.querySelectorAll(".nav a"));
+    const sections = links.map((link) => document.querySelector(link.getAttribute("href"))).filter(Boolean);
+
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (!visible) return;
+      links.forEach((link) => {
+        link.classList.toggle("active", link.getAttribute("href") === "#" + visible.target.id);
+      });
+    }, { rootMargin: "-20% 0px -65% 0px", threshold: [0.1, 0.25, 0.5] });
+
+    sections.forEach((section) => observer.observe(section));
+  </script>
+</body>
+</html>
