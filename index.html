@@ -307,6 +307,10 @@
         radial-gradient(circle at 78% 64%, rgba(34, 107, 84, 0.14), transparent 28%);
     }
 
+    .mobile-route-flow {
+      display: none;
+    }
+
     .map-grid {
       position: absolute;
       inset: 0;
@@ -495,6 +499,68 @@
     .route-steps i {
       color: var(--muted);
     }
+
+    .mobile-route-step {
+      position: relative;
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 12px;
+      padding: 12px;
+      border: 1px solid #eee9de;
+      border-radius: var(--radius);
+      background: var(--panel);
+    }
+
+    .mobile-route-step + .mobile-route-step {
+      margin-top: 10px;
+    }
+
+    .mobile-route-step::before {
+      content: "";
+      position: absolute;
+      left: 28px;
+      top: -11px;
+      width: 2px;
+      height: 10px;
+      background: var(--line);
+    }
+
+    .mobile-route-step:first-child::before {
+      display: none;
+    }
+
+    .mobile-route-step span {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: var(--green);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .mobile-route-step strong {
+      display: block;
+      font-size: 14px;
+      line-height: 1.25;
+    }
+
+    .mobile-route-step small {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .mobile-route-step.kansai span { background: var(--blue); }
+    .mobile-route-step.kyoto span { background: var(--amber); }
+    .mobile-route-step.tokyo span { background: var(--green); }
+    .mobile-route-step.sea span { background: var(--blue); }
+    .mobile-route-step.bay span { background: var(--amber); }
+    .mobile-route-step.air span { background: var(--red); }
 
     .daily-route-grid {
       display: grid;
@@ -980,7 +1046,14 @@
       .time-row { grid-template-columns: 1fr; gap: 5px; }
       .section-head { align-items: flex-start; flex-direction: column; }
       .route-shell { padding: 12px; }
-      .route-map { min-height: 1030px; }
+      .route-map { display: none; }
+      .mobile-route-flow {
+        display: block;
+        padding: 12px;
+        border: 1px solid #eee9de;
+        border-radius: var(--radius);
+        background: var(--panel-soft);
+      }
       .route-line { display: none; }
       .pin {
         left: 14px !important;
@@ -1182,6 +1255,20 @@
               <strong>D11 NRT T1</strong>
               <small>傅宏宇返程</small>
             </div>
+          </div>
+
+          <div class="mobile-route-flow" aria-label="Mobile trip route map">
+            <div class="mobile-route-step kansai"><span>D1</span><div><strong>KIX → 大阪</strong><small>梅田蓝天大厦 / 露天神社 / 心斋桥</small></div></div>
+            <div class="mobile-route-step kansai"><span>D2</span><div><strong>大阪市区</strong><small>难波八坂 / 大阪城 / 新世界</small></div></div>
+            <div class="mobile-route-step kyoto"><span>D3</span><div><strong>大阪 → 京都东山</strong><small>三十三间堂可选 / 清水寺 / 八坂神社</small></div></div>
+            <div class="mobile-route-step kyoto"><span>D4</span><div><strong>京都北线 → 夜巴</strong><small>伏见稻荷 / 下鸭河合 / 叡山电车 / 夜巴去东京</small></div></div>
+            <div class="mobile-route-step tokyo"><span>D5</span><div><strong>东京东侧</strong><small>上野 / 阿美横丁 / 秋叶原 / 神田神社</small></div></div>
+            <div class="mobile-route-step tokyo"><span>D6</span><div><strong>浅草线</strong><small>浅草寺 / 浅草文化观光中心 / 隅田川 / 东京铁塔外观</small></div></div>
+            <div class="mobile-route-step tokyo"><span>D7</span><div><strong>西东京线</strong><small>池袋 / 明治神宫 / 原宿 / 涩谷</small></div></div>
+            <div class="mobile-route-step sea"><span>D8</span><div><strong>镰仓・江之岛</strong><small>长谷寺 / 御灵神社 / 镰仓大佛 / 江之岛</small></div></div>
+            <div class="mobile-route-step bay"><span>D9</span><div><strong>东京 Disney</strong><small>舞滨整天，不加其他景点</small></div></div>
+            <div class="mobile-route-step air"><span>D10</span><div><strong>东京 → 成田</strong><small>补货 / 孙正田 NRT T2 / 傅宏宇成田过夜</small></div></div>
+            <div class="mobile-route-step air"><span>D11</span><div><strong>成田 NRT T1</strong><small>傅宏宇早班机返程</small></div></div>
           </div>
 
           <div class="route-panel">
